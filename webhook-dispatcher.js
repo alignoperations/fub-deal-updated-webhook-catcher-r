@@ -22,15 +22,19 @@ app.get('/health', (req, res) => {
 // Webhook dispatcher endpoint
 app.post('/webhook/deal-update', async (req, res) => {
   console.log('=== WEBHOOK RECEIVED ===');
-  console.log('Event:', req.get('X-Event'));
-  console.log('Resource IDs:', req.body.resourceIds);
+  console.log('[HEADERS]', JSON.stringify(req.headers, null, 2));
+  console.log('[BODY]', JSON.stringify(req.body, null, 2));
+
+  const receivedEvent = req.get('X-Event') || 'undefined';
+  console.log('Event:', receivedEvent);
+  console.log('Resource IDs:', req.body?.resourceIds || '[MISSING]');
 
   const results = [];
   for (const url of forwardUrls) {
     try {
       const payload = {
         ...req.body,
-        event: 'dealsUpdated'
+        event: receivedEvent !== 'undefined' ? receivedEvent : 'dealsUpdated'
       };
 
       const resp = await axios.post(url, payload, {
@@ -46,6 +50,12 @@ app.post('/webhook/deal-update', async (req, res) => {
     }
   }
   res.json({ forwarded: results });
+});
+
+// Catch-all route for rogue hits
+app.all('*', (req, res) => {
+  console.log('[DEBUG] Unknown route hit:', req.method, req.originalUrl);
+  res.status(404).send('Not found');
 });
 
 // Start server
