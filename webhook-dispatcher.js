@@ -28,10 +28,14 @@ app.post('/webhook/deal-update', async (req, res) => {
   const results = [];
   for (const url of forwardUrls) {
     try {
-      const resp = await axios.post(url, req.body, {
+      const payload = {
+        ...req.body,
+        event: 'dealsUpdated'
+      };
+
+      const resp = await axios.post(url, payload, {
         headers: {
-          'Content-Type': 'application/json',
-          'X-Event': 'dealsUpdated'
+          'Content-Type': 'application/json'
         }
       });
       console.log('[FORWARDED] Forwarded to ' + url + ': ' + resp.status);
