@@ -21,16 +21,19 @@ app.get('/health', (req, res) => {
 
 // Webhook dispatcher endpoint
 app.post('/webhook/deal-update', async (req, res) => {
-  console.log('[RECEIVED] Webhook:', JSON.stringify(req.body));
+  console.log('=== WEBHOOK RECEIVED ===');
+  console.log('Event:', req.get('X-Event'));
+  console.log('Resource IDs:', req.body.resourceIds);
+
   const results = [];
   for (const url of forwardUrls) {
     try {
       const resp = await axios.post(url, req.body, {
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Event': 'dealsUpdated'
-  }
-});
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Event': 'dealsUpdated'
+        }
+      });
       console.log('[FORWARDED] Forwarded to ' + url + ': ' + resp.status);
       results.push({ url, status: resp.status });
     } catch (err) {
