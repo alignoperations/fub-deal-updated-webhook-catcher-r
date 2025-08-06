@@ -12,6 +12,9 @@ const forwardUrls = (process.env.FORWARD_URLS || '')
   .map(u => u.trim())
   .filter(Boolean);
 
+// Root redirect to health
+app.get('/', (req, res) => res.redirect('/health'));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
@@ -39,4 +42,34 @@ app.post('/webhook/deal-update', async (req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Webhook dispatcher running on port ${PORT}`));
+```
+
+---
+
+**.env** (for local development)
+```dotenv
+# Forward to your deal-sync automation and your contact-update service
+FORWARD_URLS=https://fub-deal-updated-webhooks-b7ab93e8241f.herokuapp.com/webhook/deal-update,https://fub-deal-sync-automation-c2c7421809c1.herokuapp.com/webhook/deal-update
+```
+
+---
+
+**Heroku CLI** (set config var and deploy)
+```bash
+# Push your code to Heroku
+git push heroku main
+
+# Configure your forwarding URLs on Heroku
+heroku config:set \
+  FORWARD_URLS="https://fub-deal-updated-webhooks-b7ab93e8241f.herokuapp.com/webhook/deal-update,https://fub-deal-sync-automation-c2c7421809c1.herokuapp.com/webhook/deal-update" \
+  --app fub-deal-updated-webhooks-b7ab93e8241f
+
+# Verify config vars
+heroku config --app fub-deal-updated-webhooks-b7ab93e8241f
+```
+
+Now your dispatcher will listen at:
+```
+https://fub-deal-updated-webhooks-b7ab93e8241f.herokuapp.com/health
+https://fub-deal-updated-webhooks-b7ab93e8241f.herokuapp.com/webhook/deal-update
 ```
