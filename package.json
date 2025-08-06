@@ -4,7 +4,7 @@
   "description": "Catches FollowUpBoss deal webhooks and dispatches to multiple targets",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node webhook-dispatcher.js"
   },
   "dependencies": {
     "axios": "^1.10.0",
