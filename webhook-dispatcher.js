@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
+const { logError, classifyError } = require('./errorLogger');
 
 const app = express();
 app.use(express.json());
@@ -52,6 +53,13 @@ async function forwardWebhook(payload, originalEvent) {
       results.push({ url, status: resp.status });
     } catch (err) {
       console.error('[ERROR] Error forwarding to ' + url + ':', err.message);
+      logError({
+        appName: 'fub-deal-updated-webhooks-r',
+        errorType: classifyError(err),
+        errorMessage: `Forwarding error to ${url}: ${err.message}`,
+        httpStatus: err.response?.status,
+        context: JSON.stringify(err.response?.data || {}).slice(0, 1000)
+      });
       results.push({ url, error: err.message });
     }
   }
